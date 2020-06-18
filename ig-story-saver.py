@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import codecs
 import json
 import os
@@ -34,7 +36,7 @@ def on_login_callback(api, new_settings_file):
 def login():
     """ Logs in using details in login_details.txt """
     settings_file_path = SETTINGS_FILE_PATH
-    username, password = open_file(LOGIN_FILE_PATH)
+    username, password = open_file(LOGIN_FILE_PATH)[:2]
     username = username.strip()
     password = password.strip()
     device_id = None
