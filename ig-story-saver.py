@@ -3,7 +3,10 @@
 import codecs
 import json
 import os
+import urllib.request
+from datetime import datetime
 
+import piexif
 from instagram_private_api import Client, ClientCookieExpiredError, ClientLoginRequiredError, ClientLoginError, \
     ClientError
 
@@ -11,6 +14,10 @@ from file_io import open_file
 
 LOGIN_FILE_PATH = "login_details.txt"
 SETTINGS_FILE_PATH = "settings.txt"
+STORIES_DIR = "stories"
+
+TIMESTAMP = 'timestamp'
+URL = 'url'
 
 
 def to_json(python_object):
@@ -80,33 +87,85 @@ def login():
     return api
 
 
+def set_date(filename, timestamp):
+    """ Sets date of file `filename` to the time in the POSIX timestamp `timestamp`. """
+    extension = filename.split('.')[-1]
+    if extension == "jpg":
+        exif_dict = piexif.load(filename)
+        time = datetime.fromtimestamp(timestamp)
+        exif_dict['Exif'] = {piexif.ExifIFD.DateTimeOriginal: time.strftime("%Y:%m:%d %H:%M:%S")}
+        exif_bytes = piexif.dump(exif_dict)
+        piexif.insert(exif_bytes, filename)
+
+    os.utime(filename, (timestamp, timestamp))
+
+
+def format_datetime(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime('%Y_%m_%d %I.%M%p') \
+        .replace('_', '-').replace("AM", "am").replace("PM", "pm").replace(" 0", " ")
+
+
+def get_extension_from_url(url):
+    return url.split('?')[0].split('.')[-1]
+
+
 def get_stories(username):
     user_key = 'user'
-    full_name_key = 'full_name'
+    pk_key = 'pk'
+    reel_key = 'reel'
+    items_key = 'items'
+    taken_at_key = 'taken_at'
+    video_versions_key = 'video_versions'
+    image_versions_key = 'image_versions2'
+    candidates_key = 'candidates'
+    url_key = 'url'
 
     api = login()
-
-    items_key = 'items'
-    pk_key = 'pk'
 
     user_info = api.username_info(username)
     user_id = user_info[user_key][pk_key]
     feed = api.user_story_feed(user_id)
-    stories = feed[items_key]
+    raw_stories = feed[reel_key][items_key]
 
-    full_name = stories[0][user_key][full_name_key]
-    print(f"Getting stories for {full_name}...")
+    stories = []
+
+    for story in raw_stories:
+        timestamp = story[taken_at_key]
+        if video_versions_key in story:
+            url = story[video_versions_key][0][url_key]
+        elif image_versions_key in story:
+            url = story[image_versions_key][candidates_key][0][url_key]
+        else:
+            raise Exception("No image or video versions")
+        stories.append({TIMESTAMP: timestamp, URL: url})
 
     print(stories)
 
     return stories
 
 
+def setup_env():
+    if not os.path.exists(STORIES_DIR):
+        os.mkdir(STORIES_DIR)
+
+
+def download_stories(stories):
+    for story in stories:
+        timestamp = story[TIMESTAMP]
+        url = story[URL]
+
+        filename = os.path.join(STORIES_DIR, format_datetime(timestamp) + '.' + get_extension_from_url(url))
+        urllib.request.urlretrieve(url, filename)
+        set_date(filename, timestamp)
+
+
 def main():
     username = input("Download stories from which user? @")
 
+    setup_env()
+
     stories = get_stories(username)
-    # download_stories(stories, username)
+    download_stories(stories)
     # upload_stories(stories)
 
 

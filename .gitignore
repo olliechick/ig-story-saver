@@ -240,3 +240,4 @@ dmypy.json
 
 login_details.txt
 settings.txt
+stories/*
