@@ -91,7 +91,7 @@ def get_stories(username):
 
     user_info = api.username_info(username)
     user_id = user_info[user_key][pk_key]
-    feed = api.user_story_feed(user_id)(user_id)
+    feed = api.user_story_feed(user_id)
     stories = feed[items_key]
 
     full_name = stories[0][user_key][full_name_key]
