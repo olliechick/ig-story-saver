@@ -154,9 +154,17 @@ def download_stories(stories):
         timestamp = story[TIMESTAMP]
         url = story[URL]
 
-        filename = os.path.join(STORIES_DIR, format_datetime(timestamp) + '.' + get_extension_from_url(url))
-        urllib.request.urlretrieve(url, filename)
-        set_date(filename, timestamp)
+        original_filename = format_datetime(timestamp)
+        fully_specified_filename = os.path.join(STORIES_DIR, original_filename + '.' + get_extension_from_url(url))
+
+        i = 1
+        while os.path.exists(fully_specified_filename):
+            filename = f"{original_filename} ({i})"
+            fully_specified_filename = os.path.join(STORIES_DIR, filename + '.' + get_extension_from_url(url))
+            i += 1
+
+        urllib.request.urlretrieve(url, fully_specified_filename)
+        set_date(fully_specified_filename, timestamp)
 
 
 def main():
