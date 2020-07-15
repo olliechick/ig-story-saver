@@ -7,7 +7,7 @@ Saves Instagram stories from a list of users to Mega, a cloud file hosting servi
 
 Install packages from `requirements.txt`.
 
-Create a file called `usernames.txt` with a list of all the usernames whose stories you want to save. For example:
+Host a text file on a website with a list of all the usernames whose stories you want to save. For example:
 
 ```csv
 user1
@@ -27,7 +27,8 @@ Create the following environment variables:
 | Environment variable | Description        | Example    |
 |----------------------|--------------------|------------|
 | `MEGA_EMAIL`         | Mega email         | `me@example.com` |
-| `MEGA_PASSWORD`      | Mega password      | `password` |.
+| `MEGA_PASSWORD`      | Mega password      | `password`       |
+| `USERNAMES_URL`      | URL of usernames text file | `https://olliechick.co.nz/example.txt` |
 
 ### Running
 

@@ -7,6 +7,7 @@ import urllib.request
 from datetime import datetime
 
 import piexif
+import requests
 from instagram_private_api import Client, ClientCookieExpiredError, ClientLoginRequiredError, ClientLoginError, \
     ClientError
 from mega import Mega
@@ -24,6 +25,7 @@ URL = 'url'
 
 ENV_MEGA_EMAIL = 'MEGA_EMAIL'
 ENV_MEGA_PASSWORD = 'MEGA_PASSWORD'
+ENV_USERNAMES_URL = 'USERNAMES_URL'
 
 
 def to_json(python_object):
@@ -203,8 +205,13 @@ def upload_files_to_mega(folders, folders_and_filenames):
         print("Uploading " + filename)
 
 
+def get_username_list():
+    request = requests.get(os.environ[ENV_USERNAMES_URL])
+    return [username.strip() for username in request.text.splitlines()]
+
+
 def main():
-    usernames = [username.strip() for username in read_file(USERNAMES_FILE_PATH)]
+    usernames = get_username_list()
     print("Usernames: " + ', '.join(usernames))
 
     setup_env()
