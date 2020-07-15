@@ -161,6 +161,8 @@ def setup_env():
 def download_stories(stories):
     filenames = []
     for username, user_stories in stories.items():
+        if not os.path.exists(os.path.join(STORIES_DIR, username)):
+            os.mkdir(os.path.join(STORIES_DIR, username))
         for story in user_stories:
             timestamp = story[TIMESTAMP]
             url = story[URL]
