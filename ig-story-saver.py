@@ -17,6 +17,7 @@ LOGIN_FILE_PATH = "login_details.txt"
 SETTINGS_FILE_PATH = "settings.txt"
 USERNAMES_FILE_PATH = "usernames.txt"
 STORIES_DIR = "stories"
+MEGA_SEP = "/"
 
 TIMESTAMP = 'timestamp'
 URL = 'url'
@@ -159,7 +160,7 @@ def setup_env():
 
 
 def download_stories(stories):
-    filenames = []
+    usernames_and_filenames = []
     for username, user_stories in stories.items():
         if not os.path.exists(os.path.join(STORIES_DIR, username)):
             os.mkdir(os.path.join(STORIES_DIR, username))
@@ -176,12 +177,12 @@ def download_stories(stories):
                 fully_specified_filename = os.path.join(STORIES_DIR, username, filename + '.' + get_extension_from_url(url))
                 i += 1
 
-            filenames.append((username, fully_specified_filename))
+            usernames_and_filenames.append((username, fully_specified_filename))
 
             urllib.request.urlretrieve(url, fully_specified_filename)
             set_date(fully_specified_filename, timestamp)
 
-    return filenames
+    return usernames_and_filenames
 
 
 def upload_files_to_mega(folders, folders_and_filenames):
@@ -191,7 +192,7 @@ def upload_files_to_mega(folders, folders_and_filenames):
     m = mega.login(email, password)
 
     for folder in folders:
-        m.create_folder(folder)
+        m.create_folder(STORIES_DIR + MEGA_SEP + folder)
 
     for folder, filename in folders_and_filenames:
         folder = m.find(folder)
@@ -204,7 +205,12 @@ def main():
 
     setup_env()
 
-    stories = get_stories(usernames)
+    # stories = get_stories(usernames)
+
+    stories = {'test5': [{'timestamp': 1592863014,
+                'url': 'https://olliechick.co.nz/images/401team.png'},
+               {'timestamp': 1592863367,
+                'url': 'https://olliechick.co.nz/images/guywilliams.jpg'}]}
     usernames_and_filenames = download_stories(stories)
     upload_files_to_mega(usernames, usernames_and_filenames)
 
