@@ -194,11 +194,13 @@ def upload_files_to_mega(folders, folders_and_filenames):
 
     for folder_name in folders:
         if m.find(folder_name) is None:
+            print("Creating folder: " + folder_name)
             m.create_folder(STORIES_DIR + MEGA_SEP + folder_name)
 
     for folder_name, filename in folders_and_filenames:
         possible_folders = m.find(folder_name)
         m.upload(filename, possible_folders[0])
+        print("Uploading " + filename)
 
 
 def main():
