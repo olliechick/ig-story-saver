@@ -191,12 +191,12 @@ def upload_files_to_mega(folders, folders_and_filenames):
     password = os.environ[ENV_MEGA_PASSWORD]
     m = mega.login(email, password)
 
-    for folder in folders:
-        m.create_folder(STORIES_DIR + MEGA_SEP + folder)
+    for folder_name in folders:
+        m.create_folder(STORIES_DIR + MEGA_SEP + folder_name)
 
-    for folder, filename in folders_and_filenames:
-        folder = m.find(folder)
-        m.upload(filename, folder[0])
+    for folder_name, filename in folders_and_filenames:
+        possible_folders = m.find(folder_name)
+        m.upload(filename, possible_folders[0])
 
 
 def main():
