@@ -15,6 +15,13 @@ user2
 user3
 ```
 
+Create a file called `login_details.txt` with your Instagram login details, for example:
+
+```csv
+username
+password
+```
+
 Create the following environment variables:
 
 | Environment variable | Description        | Example    |
