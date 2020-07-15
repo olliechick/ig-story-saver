@@ -9,6 +9,7 @@ from datetime import datetime
 import piexif
 from instagram_private_api import Client, ClientCookieExpiredError, ClientLoginRequiredError, ClientLoginError, \
     ClientError
+from mega import Mega
 
 from file_io import open_file
 
@@ -18,6 +19,9 @@ STORIES_DIR = "stories"
 
 TIMESTAMP = 'timestamp'
 URL = 'url'
+
+ENV_MEGA_EMAIL = 'MEGA_EMAIL'
+ENV_MEGA_PASSWORD = 'MEGA_PASSWORD'
 
 
 def to_json(python_object):
@@ -150,6 +154,7 @@ def setup_env():
 
 
 def download_stories(stories):
+    filenames = []
     for story in stories:
         timestamp = story[TIMESTAMP]
         url = story[URL]
@@ -163,8 +168,23 @@ def download_stories(stories):
             fully_specified_filename = os.path.join(STORIES_DIR, filename + '.' + get_extension_from_url(url))
             i += 1
 
+        filenames.append(fully_specified_filename)
+
         urllib.request.urlretrieve(url, fully_specified_filename)
         set_date(fully_specified_filename, timestamp)
+
+    return filenames
+
+
+def upload_files_to_mega(mega_folder, filenames):
+    mega = Mega()
+    email = os.environ[ENV_MEGA_EMAIL]
+    password = os.environ[ENV_MEGA_PASSWORD]
+    m = mega.login(email, password)
+    m.create_folder(mega_folder)
+    folder = m.find(mega_folder)
+    for filename in filenames:
+        m.upload(filename, folder[0])
 
 
 def main():
@@ -173,8 +193,8 @@ def main():
     setup_env()
 
     stories = get_stories(username)
-    download_stories(stories)
-    # upload_stories(stories)
+    filenames = download_stories(stories)
+    upload_files_to_mega(username, filenames)
 
 
 if __name__ == '__main__':
