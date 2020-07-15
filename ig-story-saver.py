@@ -131,7 +131,6 @@ def get_stories(usernames):
     stories = dict()
 
     for username in usernames:
-        print(username)
         user_info = api.username_info(username)
         user_id = user_info[user_key][pk_key]
         feed = api.user_story_feed(user_id)
@@ -204,12 +203,15 @@ def upload_files_to_mega(folders, folders_and_filenames):
 
 def main():
     usernames = [username.strip() for username in read_file(USERNAMES_FILE_PATH)]
-    print(usernames)
+    print("Usernames: " + ', '.join(usernames))
 
     setup_env()
 
+    print("Getting stories...")
     stories = get_stories(usernames)
+    print("Downloading stories...")
     usernames_and_filenames = download_stories(stories)
+    print("Uploading stories...")
     upload_files_to_mega(usernames, usernames_and_filenames)
 
 
