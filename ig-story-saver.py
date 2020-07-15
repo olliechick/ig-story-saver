@@ -11,10 +11,11 @@ from instagram_private_api import Client, ClientCookieExpiredError, ClientLoginR
     ClientError
 from mega import Mega
 
-from file_io import open_file
+from file_io import read_file
 
 LOGIN_FILE_PATH = "login_details.txt"
 SETTINGS_FILE_PATH = "settings.txt"
+USERNAMES_FILE_PATH = "usernames.txt"
 STORIES_DIR = "stories"
 
 TIMESTAMP = 'timestamp'
@@ -47,7 +48,7 @@ def on_login_callback(api, new_settings_file):
 def login():
     """ Logs in using details in login_details.txt """
     settings_file_path = SETTINGS_FILE_PATH
-    username, password = open_file(LOGIN_FILE_PATH)[:2]
+    username, password = read_file(LOGIN_FILE_PATH)[:2]
     username = username.strip()
     password = password.strip()
     device_id = None
@@ -113,7 +114,7 @@ def get_extension_from_url(url):
     return url.split('?')[0].split('.')[-1]
 
 
-def get_stories(username):
+def get_stories(usernames):
     user_key = 'user'
     pk_key = 'pk'
     reel_key = 'reel'
@@ -126,24 +127,28 @@ def get_stories(username):
 
     api = login()
 
-    user_info = api.username_info(username)
-    user_id = user_info[user_key][pk_key]
-    feed = api.user_story_feed(user_id)
-    raw_stories = feed[reel_key][items_key]
+    stories = dict()
 
-    stories = []
+    for username in usernames:
+        print(username)
+        user_info = api.username_info(username)
+        user_id = user_info[user_key][pk_key]
+        feed = api.user_story_feed(user_id)
+        raw_stories = feed[reel_key][items_key]
 
-    for story in raw_stories:
-        timestamp = story[taken_at_key]
-        if video_versions_key in story:
-            url = story[video_versions_key][0][url_key]
-        elif image_versions_key in story:
-            url = story[image_versions_key][candidates_key][0][url_key]
-        else:
-            raise Exception("No image or video versions")
-        stories.append({TIMESTAMP: timestamp, URL: url})
+        stories_for_this_user = []
 
-    print(stories)
+        for story in raw_stories:
+            timestamp = story[taken_at_key]
+            if video_versions_key in story:
+                url = story[video_versions_key][0][url_key]
+            elif image_versions_key in story:
+                url = story[image_versions_key][candidates_key][0][url_key]
+            else:
+                raise Exception("No image or video versions")
+            stories_for_this_user.append({TIMESTAMP: timestamp, URL: url})
+
+        stories[username] = stories_for_this_user
 
     return stories
 
@@ -155,46 +160,51 @@ def setup_env():
 
 def download_stories(stories):
     filenames = []
-    for story in stories:
-        timestamp = story[TIMESTAMP]
-        url = story[URL]
+    for username, user_stories in stories.items():
+        for story in user_stories:
+            timestamp = story[TIMESTAMP]
+            url = story[URL]
 
-        original_filename = format_datetime(timestamp)
-        fully_specified_filename = os.path.join(STORIES_DIR, original_filename + '.' + get_extension_from_url(url))
+            original_filename = format_datetime(timestamp)
+            fully_specified_filename = os.path.join(STORIES_DIR, username, original_filename + '.' + get_extension_from_url(url))
 
-        i = 1
-        while os.path.exists(fully_specified_filename):
-            filename = f"{original_filename} ({i})"
-            fully_specified_filename = os.path.join(STORIES_DIR, filename + '.' + get_extension_from_url(url))
-            i += 1
+            i = 1
+            while os.path.exists(fully_specified_filename):
+                filename = f"{original_filename} ({i})"
+                fully_specified_filename = os.path.join(STORIES_DIR, username, filename + '.' + get_extension_from_url(url))
+                i += 1
 
-        filenames.append(fully_specified_filename)
+            filenames.append((username, fully_specified_filename))
 
-        urllib.request.urlretrieve(url, fully_specified_filename)
-        set_date(fully_specified_filename, timestamp)
+            urllib.request.urlretrieve(url, fully_specified_filename)
+            set_date(fully_specified_filename, timestamp)
 
     return filenames
 
 
-def upload_files_to_mega(mega_folder, filenames):
+def upload_files_to_mega(folders, folders_and_filenames):
     mega = Mega()
     email = os.environ[ENV_MEGA_EMAIL]
     password = os.environ[ENV_MEGA_PASSWORD]
     m = mega.login(email, password)
-    m.create_folder(mega_folder)
-    folder = m.find(mega_folder)
-    for filename in filenames:
+
+    for folder in folders:
+        m.create_folder(folder)
+
+    for folder, filename in folders_and_filenames:
+        folder = m.find(folder)
         m.upload(filename, folder[0])
 
 
 def main():
-    username = input("Download stories from which user? @")
+    usernames = [username.strip() for username in read_file(USERNAMES_FILE_PATH)]
+    print(usernames)
 
     setup_env()
 
-    stories = get_stories(username)
-    filenames = download_stories(stories)
-    upload_files_to_mega(username, filenames)
+    stories = get_stories(usernames)
+    usernames_and_filenames = download_stories(stories)
+    upload_files_to_mega(usernames, usernames_and_filenames)
 
 
 if __name__ == '__main__':
