@@ -15,19 +15,14 @@ user2
 user3
 ```
 
-Create a file called `login_details.txt` with your Instagram login details, for example:
-
-```csv
-username
-password
-```
-
 Create the following environment variables:
 
 | Environment variable | Description        | Example    |
 |----------------------|--------------------|------------|
 | `MEGA_EMAIL`         | Mega email         | `me@example.com` |
 | `MEGA_PASSWORD`      | Mega password      | `password`       |
+| `IG_USERNAME`        | Instagram username | `username` |
+| `IG_PASSWORD`        | Instagram password | `password` |
 | `USERNAMES_URL`      | URL of usernames text file | `https://olliechick.co.nz/example.txt` |
 
 ### Running

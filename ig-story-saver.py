@@ -25,6 +25,8 @@ URL = 'url'
 
 ENV_MEGA_EMAIL = 'MEGA_EMAIL'
 ENV_MEGA_PASSWORD = 'MEGA_PASSWORD'
+ENV_IG_USERNAME = 'IG_USERNAME'
+ENV_IG_PASSWORD = 'IG_PASSWORD'
 ENV_USERNAMES_URL = 'USERNAMES_URL'
 
 
@@ -49,11 +51,10 @@ def on_login_callback(api, new_settings_file):
 
 
 def login():
-    """ Logs in using details in login_details.txt """
+    """ Logs in using details in environment variables """
     settings_file_path = SETTINGS_FILE_PATH
-    username, password = read_file(LOGIN_FILE_PATH)[:2]
-    username = username.strip()
-    password = password.strip()
+    username = os.environ[ENV_IG_USERNAME]
+    password = os.environ[ENV_IG_PASSWORD]
     device_id = None
     api = None
 
