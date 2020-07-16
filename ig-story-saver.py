@@ -79,8 +79,9 @@ def get_stories(usernames):
     stories = dict()
 
     for username in usernames:
+        print(username)
         user_id = bot.get_user_id_from_username(username)
-        stories = bot.get_user_stories(user_id)
+        stories = bot.get_user_reel(user_id)
         print(stories)
         # user_info = api.username_info(username)
         # user_id = user_info[user_key][pk_key]
@@ -167,10 +168,10 @@ def main():
 
     print("Getting stories...")
     stories = get_stories(usernames)
-    print("Downloading stories...")
-    usernames_and_filenames = download_stories(stories)
-    print("Uploading stories...")
-    upload_files_to_mega(usernames, usernames_and_filenames)
+    # print("Downloading stories...")
+    # usernames_and_filenames = download_stories(stories)
+    # print("Uploading stories...")
+    # upload_files_to_mega(usernames, usernames_and_filenames)
 
 
 if __name__ == '__main__':
