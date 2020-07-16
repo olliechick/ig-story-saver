@@ -130,19 +130,19 @@ def download_stories(stories):
     return usernames_and_filenames
 
 
-def upload_files_to_mega(folders, folders_and_filenames):
+def upload_files_to_mega(folders_and_filenames):
     mega = Mega()
     email = os.environ[ENV_MEGA_EMAIL]
     password = os.environ[ENV_MEGA_PASSWORD]
     m = mega.login(email, password)
 
-    for folder_name in folders:
-        if m.find(folder_name, exclude_deleted=True) is None:
-            print("Creating folder: " + folder_name)
-            m.create_folder(STORIES_DIR + MEGA_SEP + folder_name)
-
     for folder_name, filename in folders_and_filenames:
         possible_folders = m.find(folder_name, exclude_deleted=True)
+        if possible_folders is None:
+            full_folder_name = STORIES_DIR + MEGA_SEP + folder_name
+            print("Creating folder: " + full_folder_name)
+            m.create_folder(full_folder_name)
+            possible_folders = m.find(folder_name, exclude_deleted=True)
         m.upload(filename, possible_folders[0])
         print("Uploading " + filename)
 
@@ -164,7 +164,7 @@ def main():
     print("Downloading stories...")
     usernames_and_filenames = download_stories(stories)
     print("Uploading stories...")
-    upload_files_to_mega(usernames, usernames_and_filenames)
+    upload_files_to_mega(usernames_and_filenames)
 
 
 if __name__ == '__main__':
