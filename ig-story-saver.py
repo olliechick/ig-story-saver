@@ -1,18 +1,14 @@
 #!/usr/bin/python3
 
 import codecs
-import json
 import os
 import urllib.request
 from datetime import datetime
 
 import piexif
 import requests
-from instagram_private_api import Client, ClientCookieExpiredError, ClientLoginRequiredError, ClientLoginError, \
-    ClientError
+from instabot import Bot
 from mega import Mega
-
-from file_io import read_file
 
 LOGIN_FILE_PATH = "login_details.txt"
 SETTINGS_FILE_PATH = "settings.txt"
@@ -41,59 +37,6 @@ def from_json(json_object):
     if '__class__' in json_object and json_object['__class__'] == 'bytes':
         return codecs.decode(json_object['__value__'].encode(), 'base64')
     return json_object
-
-
-def on_login_callback(api, new_settings_file):
-    cache_settings = api.settings
-    with open(new_settings_file, 'w') as outfile:
-        json.dump(cache_settings, outfile, default=to_json)
-        print('SAVED: {0!s}'.format(new_settings_file))
-
-
-def login():
-    """ Logs in using details in environment variables """
-    settings_file_path = SETTINGS_FILE_PATH
-    username = os.environ[ENV_IG_USERNAME]
-    password = os.environ[ENV_IG_PASSWORD]
-    device_id = None
-    api = None
-
-    try:
-        settings_file = settings_file_path
-        if not os.path.isfile(settings_file):
-            # settings file does not exist
-            print('Unable to find file: {0!s}'.format(settings_file))
-
-            # login new
-            api = Client(username, password, on_login=lambda x: on_login_callback(x, settings_file_path))
-        else:
-            with open(settings_file) as file_data:
-                cached_settings = json.load(file_data, object_hook=from_json)
-            print('Reusing settings: {0!s}'.format(settings_file))
-
-            device_id = cached_settings.get('device_id')
-            # reuse auth settings
-            api = Client(username, password, settings=cached_settings)
-
-    except (ClientCookieExpiredError, ClientLoginRequiredError) as e:
-        print('ClientCookieExpiredError/ClientLoginRequiredError: {0!s}'.format(e))
-
-        # Login expired
-        # Do relogin but use default ua, keys and such
-        api = Client(username, password, device_id=device_id,
-                     on_login=lambda x: on_login_callback(x, settings_file_path))
-
-    except ClientLoginError as e:
-        print('ClientLoginError {0!s}'.format(e))
-        exit(9)
-    except ClientError as e:
-        print('ClientError {0!s} (Code: {1:d}, Response: {2!s})'.format(e.msg, e.code, e.error_response))
-        exit(9)
-    except Exception as e:
-        print('Unexpected Exception: {0!s}'.format(e))
-        exit(99)
-
-    return api
 
 
 def set_date(filename, timestamp):
@@ -129,29 +72,34 @@ def get_stories(usernames):
     candidates_key = 'candidates'
     url_key = 'url'
 
-    api = login()
+    # api = login()
+    bot = Bot()
+    bot.login(username=os.environ[ENV_IG_USERNAME], password=os.environ[ENV_IG_PASSWORD])
 
     stories = dict()
 
     for username in usernames:
-        user_info = api.username_info(username)
-        user_id = user_info[user_key][pk_key]
-        feed = api.user_story_feed(user_id)
-        raw_stories = feed[reel_key][items_key]
-
-        stories_for_this_user = []
-
-        for story in raw_stories:
-            timestamp = story[taken_at_key]
-            if video_versions_key in story:
-                url = story[video_versions_key][0][url_key]
-            elif image_versions_key in story:
-                url = story[image_versions_key][candidates_key][0][url_key]
-            else:
-                raise Exception("No image or video versions")
-            stories_for_this_user.append({TIMESTAMP: timestamp, URL: url})
-
-        stories[username] = stories_for_this_user
+        user_id = bot.get_user_id_from_username(username)
+        stories = bot.get_user_stories(user_id)
+        print(stories)
+        # user_info = api.username_info(username)
+        # user_id = user_info[user_key][pk_key]
+        # feed = api.user_story_feed(user_id)
+        # raw_stories = feed[reel_key][items_key]
+        #
+        # stories_for_this_user = []
+        #
+        # for story in raw_stories:
+        #     timestamp = story[taken_at_key]
+        #     if video_versions_key in story:
+        #         url = story[video_versions_key][0][url_key]
+        #     elif image_versions_key in story:
+        #         url = story[image_versions_key][candidates_key][0][url_key]
+        #     else:
+        #         raise Exception("No image or video versions")
+        #     stories_for_this_user.append({TIMESTAMP: timestamp, URL: url})
+        #
+        # stories[username] = stories_for_this_user
 
     return stories
 

@@ -1,4 +1,4 @@
 requests
-instagram_private_api
+instabot
 piexif
 mega.py
