@@ -62,9 +62,6 @@ def get_extension_from_url(url):
 
 
 def get_stories(usernames):
-    user_key = 'user'
-    pk_key = 'pk'
-    reel_key = 'reel'
     items_key = 'items'
     taken_at_key = 'taken_at'
     video_versions_key = 'video_versions'
@@ -79,28 +76,23 @@ def get_stories(usernames):
     stories = dict()
 
     for username in usernames:
-        print(username)
+        print("Getting stories for " + username)
         user_id = bot.get_user_id_from_username(username)
-        stories = bot.get_user_reel(user_id)
-        print(stories)
-        # user_info = api.username_info(username)
-        # user_id = user_info[user_key][pk_key]
-        # feed = api.user_story_feed(user_id)
-        # raw_stories = feed[reel_key][items_key]
-        #
-        # stories_for_this_user = []
-        #
-        # for story in raw_stories:
-        #     timestamp = story[taken_at_key]
-        #     if video_versions_key in story:
-        #         url = story[video_versions_key][0][url_key]
-        #     elif image_versions_key in story:
-        #         url = story[image_versions_key][candidates_key][0][url_key]
-        #     else:
-        #         raise Exception("No image or video versions")
-        #     stories_for_this_user.append({TIMESTAMP: timestamp, URL: url})
-        #
-        # stories[username] = stories_for_this_user
+        raw_stories = bot.get_user_reel(user_id)[items_key]
+
+        stories_for_this_user = []
+
+        for story in raw_stories:
+            timestamp = story[taken_at_key]
+            if video_versions_key in story:
+                url = story[video_versions_key][0][url_key]
+            elif image_versions_key in story:
+                url = story[image_versions_key][candidates_key][0][url_key]
+            else:
+                raise Exception("No image or video versions")
+            stories_for_this_user.append({TIMESTAMP: timestamp, URL: url})
+
+        stories[username] = stories_for_this_user
 
     return stories
 
@@ -168,10 +160,10 @@ def main():
 
     print("Getting stories...")
     stories = get_stories(usernames)
-    # print("Downloading stories...")
-    # usernames_and_filenames = download_stories(stories)
-    # print("Uploading stories...")
-    # upload_files_to_mega(usernames, usernames_and_filenames)
+    print("Downloading stories...")
+    usernames_and_filenames = download_stories(stories)
+    print("Uploading stories...")
+    upload_files_to_mega(usernames, usernames_and_filenames)
 
 
 if __name__ == '__main__':
