@@ -24,6 +24,7 @@ Create the following environment variables:
 | `IG_USERNAME`        | Instagram username | `username` |
 | `IG_PASSWORD`        | Instagram password | `password` |
 | `USERNAMES_URL`      | URL of usernames text file | `https://olliechick.co.nz/example.txt` |
+| `TIMEZONE_NAME`      | Timezone name (optional - if not included, then the computer's local timezone is used) - see the "TZ database name" column at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List for a list of options | `Pacific/Auckland` |
 
 ### Running
 

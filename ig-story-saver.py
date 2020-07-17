@@ -9,6 +9,7 @@ import piexif
 import requests
 from instabot import Bot
 from mega import Mega
+from pytz import timezone
 
 LOGIN_FILE_PATH = "login_details.txt"
 SETTINGS_FILE_PATH = "settings.txt"
@@ -24,6 +25,7 @@ ENV_MEGA_PASSWORD = 'MEGA_PASSWORD'
 ENV_IG_USERNAME = 'IG_USERNAME'
 ENV_IG_PASSWORD = 'IG_PASSWORD'
 ENV_USERNAMES_URL = 'USERNAMES_URL'
+ENV_TIMEZONE_NAME = 'TIMEZONE_NAME'
 
 
 def to_json(python_object):
@@ -53,7 +55,8 @@ def set_date(filename, timestamp):
 
 
 def format_datetime(timestamp):
-    return datetime.fromtimestamp(timestamp).strftime('%Y_%m_%d %I.%M%p') \
+    tz = os.environ[ENV_TIMEZONE_NAME] if ENV_TIMEZONE_NAME in os.environ else None
+    return datetime.fromtimestamp(timestamp, timezone(tz)).strftime('%Y_%m_%d %I.%M%p') \
         .replace('_', '-').replace("AM", "am").replace("PM", "pm").replace(" 0", " ")
 
 
