@@ -16,6 +16,7 @@ SETTINGS_FILE_PATH = "settings.txt"
 USERNAMES_FILE_PATH = "usernames.txt"
 STORIES_DIR = "stories"
 MEGA_SEP = "/"
+DATETIME_FORMAT = '%Y_%m_%d %I.%M%p'
 
 TIMESTAMP = 'timestamp'
 URL = 'url'
@@ -56,7 +57,7 @@ def set_date(filename, timestamp):
 
 def format_datetime(timestamp):
     tz = os.environ[ENV_TIMEZONE_NAME] if ENV_TIMEZONE_NAME in os.environ else None
-    return datetime.fromtimestamp(timestamp, timezone(tz)).strftime('%Y_%m_%d %I.%M%p') \
+    return datetime.fromtimestamp(timestamp, timezone(tz)).strftime(DATETIME_FORMAT) \
         .replace('_', '-').replace("AM", "am").replace("PM", "pm").replace(" 0", " ")
 
 
