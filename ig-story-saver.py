@@ -163,7 +163,6 @@ def main():
 
     print("Getting stories...")
     stories = get_stories(usernames)
-    print(stories)
     print("Downloading stories...")
     usernames_and_filenames = download_stories(stories)
     print("Uploading stories...")
