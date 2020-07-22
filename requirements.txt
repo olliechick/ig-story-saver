@@ -3,3 +3,4 @@ requests
 instabot
 piexif
 mega.py
+sentry-sdk

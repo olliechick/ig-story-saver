@@ -36,6 +36,10 @@ When run, the program will download all the users' stories to a `stories` direct
 
 Instagram may block the login attempt if, for example, you have a new account or you run it from a server hosted in another country to the one that you normally logged in to your account on. The API this runs on recommends you not use your own account. I recommend creating a burner account and using that (although this won't work for saving stories of users with a private account).
 
+#### Sentry
+
+If you have connected [Sentry](https://docs.sentry.io/) to the application, this will receive any exceptions raised. The environment variable `SENTRY_DSN` should be set to the DSN provided by Sentry.
+
 #### Fixing dates
 
 To set the dates of the files (in the subdirectories of the stories directory) to match the filename, run the command `python3 fix_dates.py`.

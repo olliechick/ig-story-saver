@@ -4,6 +4,7 @@ import codecs
 import os
 import urllib.request
 from datetime import datetime
+import sentry_sdk
 
 import piexif
 import requests
@@ -27,6 +28,7 @@ ENV_IG_USERNAME = 'IG_USERNAME'
 ENV_IG_PASSWORD = 'IG_PASSWORD'
 ENV_USERNAMES_URL = 'USERNAMES_URL'
 ENV_TIMEZONE_NAME = 'TIMEZONE_NAME'
+ENV_SENTRY_DSN = 'SENTRY_DSN'
 
 
 def to_json(python_object):
@@ -157,6 +159,9 @@ def get_username_list():
 
 
 def main():
+    if ENV_SENTRY_DSN in os.environ:
+        sentry_sdk.init(os.environ[ENV_SENTRY_DSN])
+
     usernames = get_username_list()
     print("Usernames: " + ', '.join(usernames))
 
