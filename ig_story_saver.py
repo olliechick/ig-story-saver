@@ -58,8 +58,8 @@ def set_date(filename, timestamp):
 
 
 def format_datetime(timestamp):
-    tz = os.environ[ENV_TIMEZONE_NAME] if ENV_TIMEZONE_NAME in os.environ else None
-    return datetime.fromtimestamp(timestamp, timezone(tz)).strftime(DATETIME_FORMAT) \
+    tz = timezone(os.environ[ENV_TIMEZONE_NAME]) if ENV_TIMEZONE_NAME in os.environ else None
+    return datetime.fromtimestamp(timestamp, tz).strftime(DATETIME_FORMAT) \
         .replace('_', '-').replace("AM", "am").replace("PM", "pm").replace(" 0", " ")
 
 
