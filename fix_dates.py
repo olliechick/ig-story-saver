@@ -12,6 +12,14 @@ if len(sys.argv) > 1:
     stories_dir = sys.argv[1]
 
 directories = os.listdir(stories_dir)
+try:
+    directories.remove('list_big_folders.sh')
+except ValueError:
+    pass
+try:
+    directories.remove('test')
+except ValueError:
+    pass
 
 for directory in directories:
     for filename in os.listdir(os.path.join(stories_dir, directory)):
