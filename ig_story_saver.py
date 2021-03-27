@@ -4,6 +4,8 @@ import codecs
 import os
 import urllib.request
 from datetime import datetime
+from urllib.error import HTTPError
+
 import sentry_sdk
 
 import piexif
@@ -128,10 +130,12 @@ def download_stories(stories):
                                                         filename + '.' + get_extension_from_url(url))
                 i += 1
 
-            usernames_and_filenames.append((username, fully_specified_filename))
-
-            urllib.request.urlretrieve(url, fully_specified_filename)
-            set_date(fully_specified_filename, timestamp)
+            try:
+                urllib.request.urlretrieve(url, fully_specified_filename)
+                set_date(fully_specified_filename, timestamp)
+                usernames_and_filenames.append((username, fully_specified_filename))
+            except HTTPError:
+                print("Error: Downloading " + url + " to " + fully_specified_filename + " failed.")
 
     return usernames_and_filenames
 
